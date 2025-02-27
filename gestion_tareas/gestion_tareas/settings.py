@@ -73,12 +73,14 @@ WSGI_APPLICATION = 'gestion_tareas.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'gestion_tareas',
         'USER': 'postgres',
-        'PASSWORD': 'fabian',
+        'PASSWORD': '1234',
         'HOST': 'db',
         'PORT': '5432',
     }
