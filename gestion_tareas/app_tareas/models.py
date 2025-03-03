@@ -25,7 +25,7 @@ class Task(models.Model):
     priority = models.CharField(max_length=5,choices=PRIORITY_CHOICES,default='MEDIA',verbose_name="Prioridad")
     due_date = models.DateField(verbose_name="Fecha de entrega")
     comment = models.TextField(blank=True, null=True, verbose_name="Comentario")
-    assigned_user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='assigned_tasks',verbose_name="Usuario asignado")
+    assigned_user = models.ForeignKey(User,on_delete=models.SET_NULL,null=True,blank=True,related_name='assigned_tasks',verbose_name="Usuario asignado")
     
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
@@ -38,3 +38,4 @@ class Task(models.Model):
     
     def __str__(self):
         return self.name
+    
