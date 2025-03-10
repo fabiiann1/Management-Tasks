@@ -37,15 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-<<<<<<< Updated upstream
-=======
-    'rest_framework',
-    'django_filters',
     'app_tareas.apps.AppTareasConfig',
-    'app_tareas',
-    'rest_framework.authtoken',
-    
->>>>>>> Stashed changes
 ]
 
 #Autenticacipon mediante token restFremwork 
