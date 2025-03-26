@@ -20,7 +20,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ['state', 'due_date', 'assigned_user__username']
     search_fields = ['name', 'description']
     ordering_fields = ['due_date', 'priority']
-
+    
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
