@@ -44,14 +44,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-<<<<<<< HEAD
     'app_tareas.apps.AppTareasConfig',
-=======
     'rest_framework',
     'django_filters',
     'app_tareas',
-    
->>>>>>> main
 ]
 
 #Autenticacipon mediante token restFremwork 
