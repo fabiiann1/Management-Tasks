@@ -2,25 +2,25 @@ services:
   db:
     image: postgres:17
     restart: always
-    environment:
-      POSTGRES_DB: gestion_tareas
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
+    env_file:
+    - .env
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data:rw
 
   web:
     build: .
     stdin_open: true
     tty: true
     volumes:
-      - .:/app
+      - .:/app:rw
     ports:
       - "8000:8000"
     depends_on:
       - db
+    env_file:
+    - .env
 
 volumes:
   postgres_data:
