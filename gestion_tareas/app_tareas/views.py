@@ -10,4 +10,9 @@ class TaskViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['state', 'due_date', 'assigned_user__username']
     search_fields = ['name', 'description']
+<<<<<<< HEAD
     ordering_fields = ['due_date', 'priority']
+    
+=======
+    ordering_fields = ['due_date', 'priority']
+>>>>>>> main

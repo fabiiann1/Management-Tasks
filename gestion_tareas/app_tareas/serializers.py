@@ -2,14 +2,26 @@ from rest_framework import serializers
 from .models import Task
 from django.contrib.auth.models import User
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> main
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username']
+<<<<<<< HEAD
+        
+
+class TaskSerializer(serializers.ModelSerializer):
+    assigned_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),required=False,allow_null=True)
+   
+=======
 
 class TaskSerializer(serializers.ModelSerializer):
     assigned_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),required=False,allow_null=True)
 
+>>>>>>> main
     class Meta:
         model = Task
         fields = '__all__'
@@ -24,4 +36,8 @@ class TaskSerializer(serializers.ModelSerializer):
         if not User.objects.filter(id=value.id).exists():
             raise serializers.ValidationError("El usuario asignado no existe.")
         return value
+<<<<<<< HEAD
+     
+=======
+>>>>>>> main
         
