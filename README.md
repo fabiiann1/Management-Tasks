@@ -180,12 +180,7 @@ python manage.py test
 | DELETE | `http://localhost:8000/api/tasks/{id}/` | Elimina una tarea |
 | GET | `http://localhost:8000/api/tasks/?state={status}` | Filtra tareas por estado |
 | GET | `http://localhost:8000/api/tasks/?due_date={due_date}` | Filtra tareas por fecha de entrega |
-| GET | `http://localhost:8000/api/tasks/?assigned_user__username={user_name}` | Filtra tareas por nombre de usuario |
-
-
-## Licencia
-
-Este proyecto está licenciado bajo la licencia MIT. Ver el archivo LICENSE para más detalles.
+| GET | `http://localhost:8000/api/tasks/?assigned_user__username={user_name}` | Filtra tareas por nombre de usuario |.
 
 ## Contacto
 
