@@ -6,10 +6,11 @@ from .views import RegisterView, CustomAuthToken
 router = DefaultRouter()
 router.register(r"tasks", TaskViewSet,basename='task')
 
-urlpatterns = [
-  path("", include(router.urls)),
-  path("register/", RegisterView.as_view(), name="register"),
-  path("login/", CustomAuthToken.as_view(), name="login"),
-  
 
+urlpatterns = [
+    path('', include(router.urls)),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('login/', CustomAuthToken.as_view(), name='login'),
+
+    
 ]
