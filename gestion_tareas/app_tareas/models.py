@@ -17,6 +17,10 @@ class Task(models.Model):
     MEDIUM = "MEDIA", "Media"
     LOW = "BAJA", "Baja"
 
+  @classmethod
+  def get_ordering(cls):
+      return [cls.HIGH, cls.MEDIUM, cls.LOW]
+
   name = models.CharField(max_length=200, verbose_name="Nombre de la tarea")
   description = models.TextField(verbose_name="Descripción de la tarea")
   state = models.CharField(

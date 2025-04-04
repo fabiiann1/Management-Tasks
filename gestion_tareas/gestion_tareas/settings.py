@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 #from dotenv import load_dotenv
+
 
 # Se carga la variable de entrno
 #load_dotenv()
@@ -96,6 +98,8 @@ WSGI_APPLICATION = "gestion_tareas.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#datab
 
+
+
 DATABASES = {
   "default": {
     "ENGINE": os.getenv("DB_ENGINE"),
@@ -106,6 +110,18 @@ DATABASES = {
     "PORT": os.getenv("DB_PORT"),
   }
 }
+
+
+if 'test' in sys.argv:
+    SECRET_KEY = 'django-insecure-dummy-key-for-tests'  # Key fija para testing
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+        'TEST': {'NAME': None}
+    }
+else:
+    SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')  # Key desde .env en desarrollo/producción
+
 
 
 # Password validation
