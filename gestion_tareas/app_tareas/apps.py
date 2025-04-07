@@ -10,3 +10,6 @@ class AppTareasConfig(AppConfig):
         Registra las señales cuando la aplicación está lista.
         """
         import app_tareas.signals
+        
+    def ready(self):
+        import app_tareas.signals

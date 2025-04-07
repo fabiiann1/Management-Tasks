@@ -120,7 +120,7 @@ if 'test' in sys.argv:
         'TEST': {'NAME': None}
     }
 else:
-    SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')  # Key desde .env en desarrollo/producción
+    SECRET_KEY = os.getenv('SECRET_KEY')  # Key desde .env en desarrollo/producción
 
 
 
