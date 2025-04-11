@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase
 from django.urls import reverse, resolve
-from app_tareas.views import TaskViewSet, RegisterView, CustomAuthToken
+from app_tareas.views import TaskViewSet, RegisterView, CustomAuthToken, LogTextFormatAPIView
 
 class TestUrls(SimpleTestCase):
     def test_task_list_url_resolves(self):
@@ -18,15 +18,19 @@ class TestUrls(SimpleTestCase):
     def test_login_url_resolves(self):
         url = reverse('login')
         self.assertEqual(resolve(url).func.view_class, CustomAuthToken)
+    
+    def test_logs_url_resolves(self):
+        url = reverse('log-list')
+        self.assertEqual(resolve(url).func.view_class, LogTextFormatAPIView)
 
     def test_url_patterns(self):
         # Verifica que todas las URLs esperadas están presentes
-        # Añadimos el prefijo '/api/' que parece estar en tu configuración
         url_patterns = [
             ('task-list', '/api/tasks/'),
             ('task-detail', '/api/tasks/1/'),
             ('register', '/api/register/'),
             ('login', '/api/login/'),
+            ('log-list','/api/logs/'),
         ]
         
         for name, expected_path in url_patterns:

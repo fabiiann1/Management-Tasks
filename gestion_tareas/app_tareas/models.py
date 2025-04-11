@@ -8,7 +8,7 @@ class State(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
-        return f"{self.code}"
+        return f"{self.code}!"
 
 
 class Priority(models.Model):
@@ -79,5 +79,4 @@ class Log(models.Model):
     data = JSONField(verbose_name="Datos del log") 
 
     def __str__(self):
-        
-        return f"{self.task.id}, {self.user.id}, {self.created_date}, {{{self.data.get('state', '')}}}"
+        return f"{self.task.id}, {self.user.id}, {self.created_date}, {{'{self.data.get('state', '')}'}}"

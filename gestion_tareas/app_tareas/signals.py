@@ -19,11 +19,13 @@ def log_task_changes(sender, instance, created, **kwargs):
     # Determina el usuario (el asignado o un usuario por defecto)
     user = instance.assigned_user or User.objects.filter(is_staff=True).first()
     
+    if user is None:
+       return 
    
     log_data = {
-        'state': instance.state.code,
+        'state': instance.state.code if instance.state else None,
         'task_id': instance.id,
-        'priority': instance.priority.code,
+        'priority': instance.priority.code if instance.state else None,
         'due_date': instance.due_date.isoformat() if instance.due_date else None
     }
     
