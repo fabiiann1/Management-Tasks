@@ -73,34 +73,46 @@ Task Management utiliza una arquitectura de microservicios containerizada, con l
 ## Estructura del Proyecto
 
 ```
-gestion_tareas/
-├── app_tareas/                # Aplicación de tareas tareas.
-│   ├── __pycache__/
-│   ├── migrations/
-│   ├── __init__.py
-│   ├── admin.py               # Configuración del panel de administración.
-│   ├── apps.py                # Configuración de la aplicación.
-│   ├── models.py              # Modelos de datos del proyecto.
-│   ├── serializers.py         # Serializadores para la API.
-│   ├── signals.py             # Señales de Django.
-│   ├── tests.py               # Pruebas unitarias.
-│   ├── urls.py                # URLs de la API.
-│   └── views.py               # Vistas de la API.
-├── gestion_tareas/            # Configuración del proyecto.
-│   ├── __pycache__/
-│   ├── __init__.py
-│   ├── asgi.py                # Configuración ASGI.
-│   ├── settings.py            # Configuraciones del proyecto.
-│   ├── urls.py                # URLs del proyecto.
-│   └── wsgi.py                # Configuración WSGI.
-├── .env                       # Variables de entorno.
-├── .env_example               # Ejemplo de variables de entorno.
-├── docker-compose.yml         # Configuración de Docker Compose.
-├── dockerfile                 # Configuración de Docker.
-├── manage.py                  # Script de administración de Django.
-├── requirements.txt           # Dependencias.
-├── .gitignore                 # Configuración de Git.
-└── README.md                  # Este archivo.
+MANAGEMENT-TASKS/
+├── gestion_tareas/
+│   ├── app_tareas/                           # Aplicación de tareas.
+│   │   ├── __pycache__/                      # Caché de Python.
+│   │   ├── migrations/                       # Migraciones de la base de datos.
+│   │   │   ├── __pycache__/
+│   │   │   ├── __init__.py                   # Inicialización de migraciones.
+│   │   │   ├── 0001_initial.py               # Migración inicial.
+│   │   │   └── 0002_data_priority_state.py   # Migración datos iniciales (Importante).
+│   │   ├── tests/                            # Pruebas unitarias.
+│   │   │   ├── __pycache__/
+│   │   │   ├── __init__.py
+│   │   │   ├── test_models.py                # Pruebas de modelos.
+│   │   │   ├── test_serializers.py           # Pruebas de serializadores.
+│   │   │   ├── test_signals.py               # Pruebas de señales.
+│   │   │   ├── test_urls.py                  # Pruebas de URLs.
+│   │   │   └── test_views.py                 # Pruebas de vistas.
+│   │   ├── __init__.py                       # Inicialización de la app.
+│   │   ├── admin.py                          # Configuración del panel de administración.
+│   │   ├── apps.py                           # Configuración de la aplicación.
+│   │   ├── models.py                         # Modelos de datos del proyecto.
+│   │   ├── serializers.py                    # Serializadores para la API.
+│   │   ├── signals.py                        # Señales de Django.
+│   │   ├── urls.py                           # URLs de la API.
+│   │   └── views.py                          # Vistas de la API.
+│   ├── gestion_tareas/                       # Configuración del proyecto principal.
+│   │   ├── __pycache__/
+│   │   ├── __init__.py                       # Inicialización del proyecto.
+│   │   ├── asgi.py                           # Configuración ASGI.
+│   │   ├── settings.py                       # Configuraciones del proyecto.
+│   │   ├── urls.py                           # URLs del proyecto.
+│   │   └── wsgi.py                           # Configuración WSGI.
+│   ├── .env                                  # Variables de entorno.
+│   ├── .env_example                          # Ejemplo de archivo .env.
+│   ├── docker-compose.yml                    # Configuración de Docker Compose.
+│   ├── dockerfile                            # Configuración de Docker.
+│   ├── manage.py                             # Script de administración de Django.
+│   ├── requirements.txt                      # Dependencias del proyecto.
+├── .gitignore                                # Archivos ignorados por Git.
+└── README.md                                 # Este archivo.
 ```
 
 ## Configuración y Ejecución
@@ -165,6 +177,9 @@ docker-compose down
 
 # Ejecutar pruebas
 python manage.py test
+
+#Ejecutar una prueba especifica con detalles de la salida de pruebas
+python manage.py test app_tareas.tests.test_models --verbosity=2
 ```
 
 ## API Endpoints
@@ -172,15 +187,16 @@ python manage.py test
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | GET | `http://localhost:8000/api/tasks/` | Obtiene la lista de todas las tareas |
+| GET | `http://localhost:8000/api/logs/` | Obtiene los log de las tareas |
+| GET | `http://localhost:8000/api/tasks/{id}/` | Obtiene detalles de una tarea específica |
+| GET | `http://localhost:8000/api/tasks/?state={status}` | Filtra tareas por estado |
+| GET | `http://localhost:8000/api/tasks/?due_date={due_date}` | Filtra tareas por fecha de entrega |
+| GET | `http://localhost:8000/api/tasks/?assigned_user__username={user_name}` | Filtra tareas por nombre de usuario |
 | POST | `http://localhost:8000/api/register/` | Registra un nuevo usuario |
 | POST | `http://localhost:8000/api/tasks/` | Crea una nueva tarea |
-| GET | `http://localhost:8000/api/tasks/{id}/` | Obtiene detalles de una tarea específica |
 | PUT | `http://localhost:8000/api/tasks/{id}/` | Actualiza una tarea completa |
 | PATCH | `http://localhost:8000/api/tasks/{id}/` | Actualiza parcialmente una tarea |
 | DELETE | `http://localhost:8000/api/tasks/{id}/` | Elimina una tarea |
-| GET | `http://localhost:8000/api/tasks/?state={status}` | Filtra tareas por estado |
-| GET | `http://localhost:8000/api/tasks/?due_date={due_date}` | Filtra tareas por fecha de entrega |
-| GET | `http://localhost:8000/api/tasks/?assigned_user__username={user_name}` | Filtra tareas por nombre de usuario |.
 
 ## Contacto
 

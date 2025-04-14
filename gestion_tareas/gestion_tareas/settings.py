@@ -15,6 +15,8 @@ import sys
 from pathlib import Path
 #from dotenv import load_dotenv
 
+#print("Prueba de carga - DB_ENGINE:", os.getenv("DB_ENGINE"))
+
 
 # Se carga la variable de entrno
 #load_dotenv()
@@ -120,7 +122,7 @@ if 'test' in sys.argv:
         'TEST': {'NAME': None}
     }
 else:
-    SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')  # Key desde .env en desarrollo/producción
+    SECRET_KEY = os.getenv('SECRET_KEY')  # Key desde .env en desarrollo/producción
 
 
 

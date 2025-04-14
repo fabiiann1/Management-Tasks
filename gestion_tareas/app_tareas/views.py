@@ -1,4 +1,7 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -6,10 +9,9 @@ from rest_framework.response import Response
 from rest_framework import generics, permissions
 from django.contrib.auth.models import User
 from .serializers import RegisterSerializer
-from .models import Task
+from .models import Task, Log
 from .serializers import TaskSerializer
 from rest_framework import status
-
 
 class TaskViewSet(viewsets.ModelViewSet):
   queryset = Task.objects.all()
@@ -19,7 +21,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     filters.SearchFilter,
     filters.OrderingFilter,
   ]
-  filterset_fields = ["state", "due_date", "assigned_user__username"]
+  filterset_fields = ["state", "due_date", "assigned_user__id"]
   search_fields = ["name", "description"]
   ordering_fields = ["due_date", "priority"]
   ordering = ['due_date']
@@ -29,12 +31,28 @@ def get_queryset(self):
         ordering = self.request.query_params.get('ordering', '')
         
         if ordering == 'priority':
-            return queryset.order_by('priority')  # Orden alfabético ascendente
+            return queryset.order_by('priority')  
         elif ordering == '-priority':
-            return queryset.order_by('-priority')  # Orden alfabético descendente
+            return queryset.order_by('-priority')  
         
         return queryset
 
+
+class LogTextFormatAPIView(APIView):
+    permission_classes = [IsAuthenticated]  
+    
+    def get(self, request):
+        logs = Log.objects.select_related('user', 'task').order_by('created_date')
+        data = []
+
+        for log in logs:
+            estado = log.data.get('state', '') 
+            line = f"{log.task.id}, {log.user.id}, {log.created_date}, {{{estado}}}"
+            data.append(line)
+
+        return Response(data)
+    
+    
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer

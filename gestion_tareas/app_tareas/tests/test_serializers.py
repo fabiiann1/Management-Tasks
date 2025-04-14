@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.exceptions import ValidationError
-from ..models import Task
+from ..models import Task, State, Priority
 from ..serializers import UserSerializer, TaskSerializer, RegisterSerializer
 from django.core.exceptions import ValidationError as DjangoValidationError
+from datetime import date
 
 class UserSerializerTest(TestCase):
     def setUp(self):
@@ -26,17 +27,24 @@ class UserSerializerTest(TestCase):
 
 class TaskSerializerTest(TestCase):
     def setUp(self):
+        # Crear usuario
         self.user = User.objects.create_user(
             username='taskuser',
             password='testpass123',
             email='task@example.com'
         )
+        
+        # Crear State y Priority necesarios
+        self.state = State.objects.create(code='TODO', name='To Do')
+        self.priority = Priority.objects.create(code='HIGH', name='High')
+        
+        # Datos para la tarea con fechas en 2025
         self.task_data = {
             'name': 'Tarea de prueba',
             'description': 'Descripción de prueba',
-            'state': 'TO DO',
-            'priority': 'MEDIA',
-            'due_date': '2023-12-31',
+            'state': self.state.id,
+            'priority': self.priority.id,
+            'due_date': '2025-12-31',  # Actualizado a 2025
             'assigned_user': self.user.id
         }
 
@@ -46,6 +54,9 @@ class TaskSerializerTest(TestCase):
         task = serializer.save()
         self.assertEqual(task.name, 'Tarea de prueba')
         self.assertEqual(task.assigned_user, self.user)
+        self.assertEqual(task.state, self.state)
+        self.assertEqual(task.priority, self.priority)
+        self.assertEqual(str(task.due_date), '2025-12-31')  # Verificamos la fecha
 
     def test_task_serializer_without_assigned_user(self):
         data = self.task_data.copy()
@@ -62,18 +73,69 @@ class TaskSerializerTest(TestCase):
         with self.assertRaises(ValidationError):
             serializer.is_valid(raise_exception=True)
 
+    def test_task_serializer_with_invalid_state(self):
+        data = self.task_data.copy()
+        data['state'] = 9999  # ID que no existe
+        serializer = TaskSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('state', serializer.errors)
+
+    def test_task_serializer_with_invalid_priority(self):
+        data = self.task_data.copy()
+        data['priority'] = 9999  # ID que no existe
+        serializer = TaskSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('priority', serializer.errors)
+
+    def test_task_serializer_without_state_and_priority(self):
+        data = {
+            'name': 'Tarea sin estado ni prioridad',
+            'description': 'Descripción',
+            'due_date': '2025-06-15'  # Actualizado a 2025
+        }
+        serializer = TaskSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        task = serializer.save()
+        self.assertIsNone(task.state)
+        self.assertIsNone(task.priority)
+        self.assertEqual(str(task.due_date), '2025-06-15')  # Verificamos la fecha
+
     def test_task_serializer_update(self):
         task = Task.objects.create(
             name='Tarea original',
             description='Descripción original',
-            state='BACKLOG',
-            priority='BAJA',
-            due_date='2023-12-01'
+            due_date='2025-01-01'  # Actualizado a 2025
         )
         serializer = TaskSerializer(instance=task, data=self.task_data, partial=True)
         self.assertTrue(serializer.is_valid())
         updated_task = serializer.save()
         self.assertEqual(updated_task.name, 'Tarea de prueba')
+        self.assertEqual(updated_task.state, self.state)
+        self.assertEqual(updated_task.priority, self.priority)
+        self.assertEqual(str(updated_task.due_date), '2025-12-31')  # Verificamos la fecha
+
+    def test_read_only_fields(self):
+        """Verifica que los campos de fecha son de solo lectura"""
+        task = Task.objects.create(
+            name='Tarea con fechas',
+            description='Descripción',
+            state=self.state,
+            priority=self.priority,
+            due_date='2025-07-01'  # Actualizado a 2025
+        )
+        
+        # Intentar modificar campos de solo lectura con fechas en 2025
+        data = {
+            'created_at': '2025-01-01T00:00:00Z',
+            'updated_at': '2025-01-01T00:00:00Z'
+        }
+        serializer = TaskSerializer(instance=task, data=data, partial=True)
+        self.assertTrue(serializer.is_valid())
+        updated_task = serializer.save()
+        
+        # Los campos no deberían haber cambiado
+        self.assertNotEqual(updated_task.created_at.isoformat(), '2025-01-01T00:00:00Z')
+        self.assertNotEqual(updated_task.updated_at.isoformat(), '2025-01-01T00:00:00Z')
 
 
 class RegisterSerializerTest(TestCase):
@@ -85,6 +147,7 @@ class RegisterSerializerTest(TestCase):
             'password2': 'ComplexPass123!'
         }
 
+    # Los tests de RegisterSerializer no tienen fechas, se mantienen igual
     def test_valid_registration(self):
         serializer = RegisterSerializer(data=self.valid_data)
         self.assertTrue(serializer.is_valid())
@@ -138,3 +201,11 @@ class RegisterSerializerTest(TestCase):
             serializer = RegisterSerializer(data=data)
             with self.assertRaises(ValidationError):
                 serializer.is_valid(raise_exception=True)
+
+    def test_email_required(self):
+        data = self.valid_data.copy()
+        data['email'] = ''
+        serializer = RegisterSerializer(data=data)
+        with self.assertRaises(ValidationError):
+            serializer.is_valid(raise_exception=True)
+        self.assertIn('email', serializer.errors)
