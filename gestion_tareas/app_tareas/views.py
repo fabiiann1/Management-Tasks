@@ -12,6 +12,7 @@ from .serializers import RegisterSerializer
 from .models import Task, Log
 from .serializers import TaskSerializer
 from rest_framework import status
+from .services import TaskCreationService
 
 class TaskViewSet(viewsets.ModelViewSet):
   queryset = Task.objects.all()
@@ -36,6 +37,51 @@ def get_queryset(self):
             return queryset.order_by('-priority')  
         
         return queryset
+
+class TaskCreateAPIView(APIView):
+    #Endpoint para creación individual de tareas
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            user = request.user
+            task_data = request.data
+            
+            task = TaskCreationService.create_task_with_save(task_data, user)
+            serializer = TaskSerializer(task)
+            
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+                )
+            
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+class BulkTaskCreateAPIView(APIView):
+    #Endpoint para creación masiva de tareas
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            user = request.user
+            tasks_data = request.data.get('tasks', [])
+            
+            count = TaskCreationService.bulk_create_tasks(tasks_data, user)
+            
+            return Response({
+                'count': count,
+                'status': 'bulk_created'
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class LogTextFormatAPIView(APIView):
@@ -88,3 +134,5 @@ class CustomAuthToken(ObtainAuthToken):
     )
 
   ordering_fields = ["due_date", "priority"]
+
+

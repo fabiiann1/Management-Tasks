@@ -20,6 +20,7 @@ from pathlib import Path
 
 # Se carga la variable de entrno
 #load_dotenv()
+print("⚙️ DB_ENGINE cargado:", os.getenv("DB_ENGINE"))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

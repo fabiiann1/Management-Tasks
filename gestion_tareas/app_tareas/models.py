@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import JSONField
-
+from django.db.models import Manager, Count
 
 class State(models.Model):
     code = models.CharField(max_length=10, unique=True)
@@ -18,6 +18,40 @@ class Priority(models.Model):
     def __str__(self):
         return f"{self.code}"
 
+class TaskQuerySet(models.QuerySet):
+    #Query para filtrar el usuario y la tarea
+    def for_user_and_state(self,username,state_code):
+        
+        return self.filter(
+            assigned_user__username=username,
+            state__code = state_code
+        )
+    #Query para ordenar las tareas por fecha de creacion
+    def order_by_creation(self, descending=True):
+        order = '-' if descending else ''
+
+        return self.order_by(f'{order}created_at')
+    # Query para filtrar tareas con mas de tres logs
+    def with_min_logs(self,min_logs=3):
+        
+        return self.annotate(
+            log_count=Count('log')
+        ).filter(
+            log_count__gt=min_logs
+        )
+#Metodos para los Queryset
+class TaskManager(models.Manager):
+    def get_queryset(self):
+        return TaskQuerySet(self.model,using=self._db)
+    
+    def for_user_and_state(self, username, state_code):
+        return self.get_queryset().for_user_and_state(username, state_code)
+    
+    def order_by_creation(self,descending=True):
+        return self.get_queryset().order_by_creation(descending)
+    
+    def with_min_logs(self,min_logs=3):
+        return self.get_queryset().with_min_logs(min_logs)
 
 class Task(models.Model):
     name = models.CharField(max_length=200, verbose_name="Nombre de la tarea")
@@ -54,6 +88,8 @@ class Task(models.Model):
     updated_at = models.DateTimeField(
       auto_now=True,
       verbose_name="Fecha de actualización")
+    
+    objects = TaskManager()
 
     class Meta:
         ordering = ["due_date", "priority"]
