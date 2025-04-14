@@ -15,6 +15,8 @@ import sys
 from pathlib import Path
 #from dotenv import load_dotenv
 
+#print("Prueba de carga - DB_ENGINE:", os.getenv("DB_ENGINE"))
+
 
 # Se carga la variable de entrno
 #load_dotenv()
