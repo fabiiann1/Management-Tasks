@@ -18,3 +18,5 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = ('name', 'state', 'priority', 'due_date', 'assigned_user')
     list_filter = ('state', 'priority', 'due_date', 'assigned_user')
     search_fields = ('name', 'description', 'comment')
+
+   

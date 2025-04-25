@@ -155,17 +155,28 @@ class TaskUpdateService:
             
             # Manejo especial para campos relacionales
             if 'state_code' in update_data:
+                # Obtenemos la instancia de State a partir del código
                 new_state = State.objects.get(code=update_data.pop('state_code'))
                 if task.state != new_state:
                     changes['state'] = {'old': task.state.code, 'new': new_state.code}
-                    task.state = new_state
+                    task.state = new_state  # Asignamos la instancia de State
             
             if 'priority_code' in update_data:
                 new_priority = Priority.objects.get(code=update_data.pop('priority_code'))
                 if task.priority != new_priority:
                     changes['priority'] = {'old': task.priority.code, 'new': new_priority.code}
                     task.priority = new_priority
-            
+
+            # Actualizar el usuario asignado si se pasa en el request
+            if 'assigned_user' in update_data:
+                try:
+                    new_user = User.objects.get(id=update_data.pop('assigned_user'))
+                    if task.assigned_user != new_user:
+                        changes['assigned_user'] = {'old': task.assigned_user.username, 'new': new_user.username}
+                        task.assigned_user = new_user
+                except User.DoesNotExist:
+                    raise ValueError("Usuario asignado no encontrado")
+
             # Actualizar campos normales
             for field, value in update_data.items():
                 if hasattr(task, field) and getattr(task, field) != value:
@@ -185,123 +196,13 @@ class TaskUpdateService:
                 )
             
             return task
-            
         except State.DoesNotExist:
             raise ValueError("El código de estado no existe")
         except Priority.DoesNotExist:
             raise ValueError("El código de prioridad no existe")
+        except User.DoesNotExist:
+            raise ValueError("El código de usuario asignado no existe")
         except ValidationError as e:
             raise ValueError(f"Error de validación: {str(e)}")
         except Exception as e:
             raise ValueError(f"Error al actualizar tarea: {str(e)}")
-
-    @staticmethod
-    @transaction.atomic
-    def bulk_update_state(task_ids, new_state_code, user):
-        """
-        Actualización masiva del estado para múltiples tareas
-        Args:
-            task_ids: Lista de IDs de tareas
-            new_state_code: Código del nuevo estado
-            user: Usuario que realiza la acción
-        Returns:
-            int: Número de tareas actualizadas
-        """
-        try:
-            state = State.objects.get(code=new_state_code)
-            tasks = Task.objects.filter(id__in=task_ids)
-            
-            # Obtener estados anteriores para el log
-            state_changes = {
-                str(task.id): task.state.code
-                for task in tasks
-                if task.state != state
-            }
-            
-            updated_count = tasks.update(state=state)
-            
-            if updated_count > 0:
-                # Crear logs solo para tareas que cambiaron
-                logs = [
-                    Log(
-                        task_id=task_id,
-                        user=user,
-                        data={
-                            'action': 'bulk_state_update',
-                            'old_state': old_state,
-                            'new_state': new_state_code
-                        }
-                    )
-                    for task_id, old_state in state_changes.items()
-                ]
-                Log.objects.bulk_create(logs)
-            
-            return updated_count
-            
-        except State.DoesNotExist:
-            raise ValueError(f"Estado '{new_state_code}' no encontrado")
-        except Exception as e:
-            raise ValueError(f"Error en actualización masiva: {str(e)}")
-
-    @staticmethod
-    @transaction.atomic
-    def complex_bulk_update(task_ids, update_data, user):
-        """
-        Actualización masiva avanzada para múltiples campos
-        Args:
-            task_ids: Lista de IDs de tareas
-            update_data: Dict con campos a actualizar
-            user: Usuario que realiza la acción
-        Returns:
-            int: Número de tareas actualizadas
-        """
-        try:
-            tasks = Task.objects.filter(id__in=task_ids)
-            if not tasks.exists():
-                return 0
-                
-            # Procesar campos relacionales primero
-            update_fields = list(update_data.keys())
-            state = priority = None
-            
-            if 'state_code' in update_data:
-                state = State.objects.get(code=update_data.pop('state_code'))
-                update_fields.remove('state_code')
-            
-            if 'priority_code' in update_data:
-                priority = Priority.objects.get(code=update_data.pop('priority_code'))
-                update_fields.remove('priority_code')
-            
-            # Aplicar cambios
-            for task in tasks:
-                if state is not None:
-                    task.state = state
-                if priority is not None:
-                    task.priority = priority
-                for field in update_fields:
-                    setattr(task, field, update_data[field])
-            
-            # Ejecutar actualización masiva
-            Task.objects.bulk_update(
-                tasks,
-                update_fields + (['state'] if state else []) + (['priority'] if priority else [])
-            )
-            
-            # Crear logs
-            logs = [
-                Log(
-                    task=task,
-                    user=user,
-                    data={
-                        'action': 'complex_bulk_update',
-                        'changes': update_data
-                    }
-                )
-                for task in tasks
-            ]
-            Log.objects.bulk_create(logs)
-            
-            return len(tasks)
-            
-        except Exception as e:
-            raise ValueError(f"Error en actualización compleja: {str(e)}")
