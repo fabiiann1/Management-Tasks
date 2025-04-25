@@ -12,7 +12,7 @@ from .serializers import RegisterSerializer
 from .models import Task, Log
 from .serializers import TaskSerializer
 from rest_framework import status
-from .services import TaskCreationService
+from .services import TaskCreationService, TaskUpdateService
 
 class TaskViewSet(viewsets.ModelViewSet):
   queryset = Task.objects.all()
@@ -77,6 +77,70 @@ class BulkTaskCreateAPIView(APIView):
                 'status': 'bulk_created'
             }, status=status.HTTP_201_CREATED)
             
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+class TaskUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self,request,pk):
+        try:
+            task = TaskUpdateService.update_task_with_save(
+                task_id=pk,
+                update_data=request.data,
+                user=request.user
+            )
+            serializer = TaskSerializer(task)
+            return Response(serializer.data)
+            
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+class BulkTaskStateUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            if not isinstance(request.data.get('task_ids',None), list):
+                raise ValueError("Se requiere una lista de Ids en 'task_ids'")
+            
+            update_count = TaskUpdateService.bulk_update_state(
+                task_ids=request.data['task_ids'],
+                new_state_code=request.data['state_code'],
+                user=request.user
+            )
+            return Response({
+                'update_count':update_count,
+                'status': 'bulk_state_updated'
+            })
+        except Exception as e:
+            return Response (
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+class BulkTaskUpdateAPIView(APIView):
+    permission_classes=[IsAuthenticated]
+    
+    def post(self,request):
+        try:
+            if not isinstance(request.data.get('task_ids', None),list):
+                raise ValueError("Se requiere una lista de IDs en 'task_ids'")
+            update_count = TaskUpdateService.complex_bulk_update(
+            task_ids=request.data['tasks_ids'],
+            update_data=request.data['update_data'],
+            user=request.user
+        )
+            return Response({
+            'update_count': update_count,
+            'status':'bulk_updated'
+        })
         except Exception as e:
             return Response(
                 {'error': str(e)},
